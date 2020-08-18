@@ -1,4 +1,5 @@
-#GXC-Solidity
+# GXC-Solidity
+
 Mintable, Brnable and Pausable ERC20 smart contract implemented for GXC, based on openzeppelin and truffle
 
 ### Install dependencies
