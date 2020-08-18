@@ -1,0 +1,19 @@
+{
+  "private":true,
+  "name": "gxc",
+  "version": "1.0.0",
+  "description": "",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "ropsten": "truffle migrate --network ropsten",
+    "live": "truffle migrate --network live"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.1.0",
+    "@truffle/hdwallet-provider": "^1.0.42"
+  }
+}
