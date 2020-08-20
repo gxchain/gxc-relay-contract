@@ -2,6 +2,8 @@
 
 Mintable, Brnable and Pausable ERC20 smart contract implemented for GXC, based on openzeppelin and truffle
 
+[Documents](./docs/READEME.md)
+
 ### Install dependencies
 
 ```bash
