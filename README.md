@@ -1,6 +1,9 @@
-# GXC-Solidity
+# GXC-Relay-Contract
 
-Mintable, Brnable and Pausable ERC20 smart contract implemented for GXC, based on openzeppelin and truffle
+This project constructs of 2 parts:
+
+- A Mintable, Brnable and Pausable ERC20 smart contract implemented for GXC, based on openzeppelin and truffle
+- A [Relay Contract](./gxc-contract) writen in C++ which will be deployed on GXChain
 
 [Documents](./docs/READEME.md)
 
