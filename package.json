@@ -1,5 +1,5 @@
 {
-  "private":true,
+  "private": true,
   "name": "gxc",
   "version": "1.0.0",
   "description": "",
@@ -14,6 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "@openzeppelin/contracts": "^3.1.0",
-    "@truffle/hdwallet-provider": "^1.0.42"
+    "@truffle/hdwallet-provider": "^1.0.42",
+    "bip39": "^3.0.2"
   }
 }
