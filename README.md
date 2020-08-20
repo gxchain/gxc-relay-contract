@@ -16,7 +16,7 @@ npm install
 
 ### Deploy
 
-> Note: A file named .secret should be created with contains the brain key of your eth account
+> Note: A file named .secret should be created which contains the brain key of your eth account
 
 ```bash
 npm run ropsten // for ropsten testnet
