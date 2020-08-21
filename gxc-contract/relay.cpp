@@ -119,16 +119,30 @@ private:
     std::vector<std::string> cross_list = {"ETH"};
     uint64_t min_deposit = 50000;
     uint64_t min_withdraw = 50000;
-    //@abi table txidTable i64
-    struct txidTable
+
+    //@abi table ctxids i64
+    struct ctxids
     {
         uint64_t txid;
         uint64_t id;
 
         uint64_t primary_key() const { return txid; }
-        GRAPHENE_SERIALIZE(txidTable, (txid)(id))
+        GRAPHENE_SERIALIZE(ctxids, (txid)(id))
     };
-    typedef multi_index<N(txidTable), txidTable> txidTable_index;
+    typedef multi_index<N(ctxids), ctxids> ctxids_index;
+
+
+    //@abi table wtxids i64
+    struct wtxids
+    {
+        uint64_t txid;
+        uint64_t id;
+
+        uint64_t primary_key() const { return txid; }
+        GRAPHENE_SERIALIZE(wtxids, (txid)(id))
+    };
+    typedef multi_index<N(wtxids), wtxids> wtxids_index;
+
 
     //@abi table record i64
     struct record
@@ -152,8 +166,8 @@ private:
         record_index;
 
     record_index records_table;
-    txidTable_index Eth_confirm_table;
-    txidTable_index Eth_withdraw_table;
+    ctxids_index Eth_confirm_table;
+    wtxids_index Eth_withdraw_table;
 };
 
 GRAPHENE_ABI(relay, (deposit)(withdraw)(confirm)(adjust))
