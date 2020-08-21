@@ -32,11 +32,11 @@ public:
         uint64_t sender = get_trx_sender();
         records_table.emplace(sender, [&](auto &o) {
             o.id = id_number;
-            o.sender = sender;
+            o.from = sender;
             o.asset_id = asset_id;
             o.amount = asset_amount;
-            o.coinkind = target;
-            o.addr = addr;
+            o.target = target;
+            o.to = addr;
             o.state = 0;
         });
     }
@@ -82,7 +82,7 @@ public:
         graphene_assert(sender == adminAccount, "You have no authority");
         auto idx = records_table.find(order_id);
         graphene_assert(idx != records_table.end(), "There is no that order_id");
-        graphene_assert((*idx).coinkind == target, "Unmatched chain name");
+        graphene_assert((*idx).target == target, "Unmatched chain name");
         if (target == "ETH")
         {
             auto txid_uint = graphenelib::string_to_name(txid.c_str());
@@ -148,17 +148,17 @@ private:
     struct record
     {
         uint64_t id;
-        uint64_t sender;
+        uint64_t from;
         uint64_t asset_id;
         int64_t amount;
-        std::string coinkind;
-        std::string addr;
+        std::string target;
+        std::string to;
         uint64_t state;
 
         uint64_t primary_key() const { return id; }
-        uint64_t by_sender() const { return sender; }
+        uint64_t by_sender() const { return from; }
 
-        GRAPHENE_SERIALIZE(record, (id)(sender)(asset_id)(amount)(coinkind)(addr)(state))
+        GRAPHENE_SERIALIZE(record, (id)(from)(asset_id)(amount)(target)(to)(state))
     };
 
     typedef multi_index<N(record), record,
