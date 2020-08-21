@@ -48,7 +48,7 @@ contract GXC is ERC20PresetMinterPauser {
         }
         uint256 id_number = id % arrayLength;
         txidArray[id_number] = txid;
-        id_number++;
+        id++;
         super.mint(to, amount);
         emit Mint(to, amount, from, txid);
     }
