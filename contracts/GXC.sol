@@ -17,14 +17,9 @@ contract GXC is ERC20PresetMinterPauser {
 
     uint8 decimals_ = 5;
 
-    event Mint(
-        address indexed to,
-        uint256 amount,
-        string txid,
-        string from_account
-    );
+    event Mint(address indexed to, uint256 amount, string from, string txid);
 
-    event Burn(address indexed sender, uint256 amount, string gxcAccount);
+    event Burn(address indexed from, uint256 amount, string to);
 
     constructor(string memory name, string memory symbol)
         public
@@ -37,8 +32,8 @@ contract GXC is ERC20PresetMinterPauser {
     function mint(
         address to,
         uint256 amount,
-        string memory txid,
-        string memory from_account
+        string memory from,
+        string memory txid
     ) public virtual {
         require(
             amount >= minMint,
@@ -48,33 +43,30 @@ contract GXC is ERC20PresetMinterPauser {
             require(
                 keccak256(abi.encodePacked(txidArray[i])) !=
                     keccak256(abi.encodePacked(txid)),
-                "The txid has existed ,you can't use it again"
+                "The txid has existed"
             );
         }
         uint256 id_number = id % arrayLength;
         txidArray[id_number] = txid;
         id_number++;
         super.mint(to, amount);
-        emit Mint(to, amount, txid, from_account);
+        emit Mint(to, amount, from, txid);
     }
 
-    function burn(uint256 amount, string memory gxcAccount) public virtual {
+    function burn(uint256 amount, string memory to) public virtual {
         require(
             amount >= minBurn,
-            "The minimum value must be greater than minMint"
+            "The minimum value must be greater than minBurn"
         );
         super.burn(amount);
-        emit Burn(msg.sender, amount, gxcAccount);
+        emit Burn(msg.sender, amount, to);
     }
 
     function adjustMinNumber(uint256 _burnMin, uint256 _mintMin)
         public
         virtual
     {
-        require(
-            hasRole(ADJUST_ROLE, _msgSender()),
-            "Must have adjust role to mint"
-        );
+        require(hasRole(ADJUST_ROLE, _msgSender()), "Adjust role required");
         minMint = _mintMin;
         minBurn = _burnMin;
     }
