@@ -6651,7 +6651,7 @@
           "name": "Burn",
           "type": "event"
         },
-        "0x85a66b9141978db9980f7e0ce3b468cebf4f7999f32b23091c5c03e798b1ba7a": {
+        "0xf2cbb0418e3132958dca4cc2e9ab525cf64488dfc7c0eaa45cdeb6c42b30490a": {
           "anonymous": false,
           "inputs": [
             {
@@ -6665,6 +6665,12 @@
               "internalType": "uint256",
               "name": "amount",
               "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "from",
+              "type": "string"
             },
             {
               "indexed": false,
@@ -6801,65 +6807,15 @@
           ],
           "name": "Unpaused",
           "type": "event"
-        },
-        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "previousOwner",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "newOwner",
-              "type": "address"
-            }
-          ],
-          "name": "OwnershipTransferred",
-          "type": "event"
-        },
-        "0xf2cbb0418e3132958dca4cc2e9ab525cf64488dfc7c0eaa45cdeb6c42b30490a": {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "to",
-              "type": "address"
-            },
-            {
-              "indexed": false,
-              "internalType": "uint256",
-              "name": "amount",
-              "type": "uint256"
-            },
-            {
-              "indexed": false,
-              "internalType": "string",
-              "name": "from",
-              "type": "string"
-            },
-            {
-              "indexed": false,
-              "internalType": "string",
-              "name": "txid",
-              "type": "string"
-            }
-          ],
-          "name": "Mint",
-          "type": "event"
         }
       },
       "links": {},
-      "address": "0x3D9C6D633cb8c6934D54081f019885aDD9134B83",
-      "transactionHash": "0xea421d03bc276d83ce6ac3b54bc17facf9de3e73964e4e0dc0a1de8b978e3db0"
+      "address": "0x19A3Cf23FEE09f02108A40c7038bC52983a87113",
+      "transactionHash": "0xf6c375ac94029e32383164a1dacbdc7f017f6df9ffdf945891cbf61465be4ab6"
     }
   },
   "schemaVersion": "3.2.3",
-  "updatedAt": "2020-08-21T03:06:23.316Z",
+  "updatedAt": "2020-08-21T03:25:00.205Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {
