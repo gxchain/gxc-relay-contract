@@ -27,8 +27,8 @@ public:
         graphene_assert(asset_amount >= min_deposit, "Must greater than minnumber ");
         contract_asset amount{asset_amount, asset_id};
         uint64_t id_number = records_table.available_primary_key();
-        auto coin_kind = find(cross_list.begin(), cross_list.end(), target);
-        graphene_assert(coin_kind != cross_list.end(), "invalid chain name");
+        auto coin_kind = find(targets.begin(), targets.end(), target);
+        graphene_assert(coin_kind != targets.end(), "invalid chain name");
         uint64_t sender = get_trx_sender();
         records_table.emplace(sender, [&](auto &o) {
             o.id = id_number;
@@ -46,10 +46,10 @@ public:
     {
         int64_t account_id = get_account_id(to_account.c_str(), to_account.size());
         uint64_t sender = get_trx_sender();
-        auto coin_kind = find(cross_list.begin(), cross_list.end(), from_target);
+        auto coin_kind = find(targets.begin(), targets.end(), from_target);
         graphene_assert(amount.asset_id == 1, "Only support GXC ");
         graphene_assert(amount.amount >= min_withdraw, "Must greater than minnumber ");
-        graphene_assert(coin_kind != cross_list.end(), "invalid chain name");
+        graphene_assert(coin_kind != targets.end(), "invalid chain name");
         graphene_assert(sender == adminAccount, "You have no authority");
         graphene_assert(account_id >= 0, "invalid account_name to_account");
         graphene_assert(amount.amount > 0, "invalid amount");
@@ -116,7 +116,7 @@ public:
 
 private:
     const uint64_t adminAccount = 4707;
-    std::vector<std::string> cross_list = {"ETH"};
+    std::vector<std::string> targets = {"ETH"};
     uint64_t min_deposit = 50000;
     uint64_t min_withdraw = 50000;
 
@@ -131,7 +131,6 @@ private:
     };
     typedef multi_index<N(ctxids), ctxids> ctxids_index;
 
-
     //@abi table wtxids i64
     struct wtxids
     {
@@ -142,7 +141,6 @@ private:
         GRAPHENE_SERIALIZE(wtxids, (txid)(id))
     };
     typedef multi_index<N(wtxids), wtxids> wtxids_index;
-
 
     //@abi table record i64
     struct record
