@@ -47,12 +47,12 @@ public:
         int64_t account_id = get_account_id(to_account.c_str(), to_account.size());
         uint64_t sender = get_trx_sender();
         auto coin_kind = find(targets.begin(), targets.end(), from_target);
-        graphene_assert(amount.asset_id == 1, "Only support GXC ");
-        graphene_assert(amount.amount >= min_withdraw, "Must greater than minnumber ");
-        graphene_assert(coin_kind != targets.end(), "invalid chain name");
-        graphene_assert(sender == adminAccount, "You have no authority");
-        graphene_assert(account_id >= 0, "invalid account_name to_account");
-        graphene_assert(amount.amount > 0, "invalid amount");
+        graphene_assert(amount.asset_id == 1, "Only support GXC");
+        graphene_assert(amount.amount >= min_withdraw, "Must greater than min number");
+        graphene_assert(coin_kind != targets.end(), "Invalid target");
+        graphene_assert(sender == adminAccount, "No authority");
+        graphene_assert(account_id >= 0, "Invalid account_name to_account");
+        graphene_assert(amount.amount > 0, "Invalid amount");
         if (from_target == "ETH")
         {
             auto txid_uint = graphenelib::string_to_name(txid.c_str());
@@ -109,7 +109,7 @@ public:
     void adjust(uint64_t deposit_min, uint64_t withdraw_min)
     {
         uint64_t sender = get_trx_sender();
-        graphene_assert(sender == adminAccount, "You have no authority");
+        graphene_assert(sender == adminAccount, "No authority");
         min_deposit = deposit_min;
         min_withdraw = withdraw_min;
     }
