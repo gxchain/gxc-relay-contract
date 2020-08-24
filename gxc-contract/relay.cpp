@@ -13,7 +13,7 @@ class relay : public contract
 {
 public:
     relay(uint64_t account_id)
-        : contract(account_id), records_table(_self, _self), Eth_confirm_table(_self, _self), Eth_withdraw_table(_self, _self)
+        : contract(account_id), fund_in_table(_self, _self), eth_confirm_table(_self, _self), eth_withdraw_table(_self, _self), fund_out_table(_self, _self)
     {
     }
 
@@ -26,11 +26,11 @@ public:
         graphene_assert(asset_id == 1, "Only support GXC ");
         graphene_assert(asset_amount >= MIN_DEPOSIT, "Must greater than minnumber ");
         contract_asset amount{asset_amount, asset_id};
-        uint64_t id_number = records_table.available_primary_key();
+        uint64_t id_number = fund_in_table.available_primary_key();
         auto coin_kind = find(TARGETS.begin(), TARGETS.end(), target);
-        graphene_assert(coin_kind != TARGETS.end(), "invalid chain name");
+        graphene_assert(coin_kind != TARGETS.end(), "Invalid chain name");
         uint64_t sender = get_trx_sender();
-        records_table.emplace(sender, [&](auto &o) {
+        fund_in_table.emplace(sender, [&](auto &o) {
             o.id = id_number;
             o.from = sender;
             o.asset_id = asset_id;
@@ -56,53 +56,80 @@ public:
         if (from_target == "ETH")
         {
             auto txid_uint = graphenelib::string_to_name(txid.c_str());
-            auto txid_iterator = Eth_withdraw_table.find(txid_uint);
-            graphene_assert(txid_iterator == Eth_withdraw_table.end(), "The txid is existed, be honest");
-            auto id_number = Eth_withdraw_table.available_primary_key();
-            Eth_withdraw_table.emplace(sender, [&](auto &o) {
+            auto txid_iterator = eth_withdraw_table.find(txid_uint);
+            graphene_assert(txid_iterator == eth_withdraw_table.end(), "The txid is existed, be honest");
+            auto id_number = eth_withdraw_table.available_primary_key();
+            eth_withdraw_table.emplace(sender, [&](auto &o) {
                 o.txid = txid_uint;
                 o.id = id_number;
             });
-            auto begin_iterator = Eth_withdraw_table.begin();
+            auto begin_iterator = eth_withdraw_table.begin();
             if (id_number - (*begin_iterator).id > TXID_LIST_LIMIT)
             {
-                Eth_withdraw_table.erase(begin_iterator);
+                eth_withdraw_table.erase(begin_iterator);
             }
             auto contract_id = current_receiver();
             auto contract_balance = get_balance(contract_id, amount.asset_id);
-            graphene_assert(contract_balance > amount.amount, "balance not enough");
-            withdraw_asset(_self, account_id, amount.asset_id, amount.amount);
+            graphene_assert(contract_balance > amount.amount, "Balance not enough");
+            //withdraw_asset(_self, account_id, amount.asset_id, amount.amount);
+            auto id_number2 = fund_out_table.available_primary_key();
+            int64_t block_time = get_head_block_time();
+            fund_out_table.emplace(sender, [&](auto &o){
+                o.id = id_number2;
+                o.to_account = account_id;
+                o.asset_id = amount.asset_id;
+                o.amount = amount.amount;
+                o.from_target = from_target;
+                o.txid = txid;
+                o.from_account = from_account;
+                o.block_time = block_time;
+            });
         }
     }
 
     //@abi action
-    void confirm(uint64_t order_id, std::string target, std::string addr, contract_asset amount, std::string txid)
+    void confirmd(uint64_t order_id, std::string target, std::string addr, contract_asset amount, std::string txid)
     {
         uint64_t sender = get_trx_sender();
         graphene_assert(sender == adminAccount, "You have no authority");
-        auto idx = records_table.find(order_id);
-        graphene_assert(idx != records_table.end(), "There is no that order_id");
+        auto idx = fund_in_table.find(order_id);
+        graphene_assert(idx != fund_in_table.end(), "There is no that order_id");
         graphene_assert((*idx).target == target, "Unmatched chain name");
         if (target == "ETH")
         {
             auto txid_uint = graphenelib::string_to_name(txid.c_str());
-            auto txid_iterator = Eth_confirm_table.find(txid_uint);
-            graphene_assert(txid_iterator == Eth_confirm_table.end(), "The txid is existed, be honest");
-            auto id_number = Eth_confirm_table.available_primary_key();
-            Eth_confirm_table.emplace(sender, [&](auto &o) {
+            auto txid_iterator = eth_confirm_table.find(txid_uint);
+            graphene_assert(txid_iterator == eth_confirm_table.end(), "The txid is existed, be honest");
+            auto id_number = eth_confirm_table.available_primary_key();
+            eth_confirm_table.emplace(sender, [&](auto &o) {
                 o.txid = txid_uint;
                 o.id = id_number;
             });
-            auto begin_iterator = Eth_confirm_table.begin();
+            auto begin_iterator = eth_confirm_table.begin();
             if (id_number - (*begin_iterator).id > TXID_LIST_LIMIT)
             {
-                Eth_confirm_table.erase(begin_iterator);
+                eth_confirm_table.erase(begin_iterator);
             }
-            records_table.modify(idx, sender, [&](auto &o) {
+            fund_in_table.modify(idx, sender, [&](auto &o) {
                 o.state = 1;
             });
-            records_table.erase(idx);
+            fund_in_table.erase(idx);
         }
+    }
+
+    //@abi action
+    void confirmw()
+    {
+       uint64_t sender = get_trx_sender();
+       graphene_assert(sender == adminAccount, "You have no authority");
+       int64_t block_time_now = get_head_block_time();
+       auto idx = fund_out_table.begin();
+       for (; idx != fund_out_table.end(); idx++){
+           if( (*idx).block_time + time_gap >= block_time_now ){
+               withdraw_asset(_self, (*idx).to_account, (*idx).asset_id, (*idx).amount);
+               fund_out_table.erase(idx);
+           }
+       }
     }
 
 private:
@@ -111,6 +138,7 @@ private:
     const uint64_t MIN_DEPOSIT = 50000;
     const uint64_t MIN_WITHDRAW = 50000;
     const uint64_t TXID_LIST_LIMIT = 10000;
+    const int64_t time_gap = 86400;
 
     //@abi table ctxids i64
     struct ctxids
@@ -134,8 +162,8 @@ private:
     };
     typedef multi_index<N(wtxids), wtxids> wtxids_index;
 
-    //@abi table record i64
-    struct record
+    //@abi table fundin i64
+    struct fundin
     {
         uint64_t id;
         uint64_t from;
@@ -148,16 +176,35 @@ private:
         uint64_t primary_key() const { return id; }
         uint64_t by_sender() const { return from; }
 
-        GRAPHENE_SERIALIZE(record, (id)(from)(asset_id)(amount)(target)(to)(state))
+        GRAPHENE_SERIALIZE(fundin, (id)(from)(asset_id)(amount)(target)(to)(state))
     };
 
-    typedef multi_index<N(record), record,
-                        indexed_by<N(sender), const_mem_fun<record, uint64_t, &record::by_sender>>>
-        record_index;
+    typedef multi_index<N(fundin), fundin,
+                        indexed_by<N(sender), const_mem_fun<fundin, uint64_t, &fundin::by_sender>>>
+        fund_in_index;
 
-    record_index records_table;
-    ctxids_index Eth_confirm_table;
-    wtxids_index Eth_withdraw_table;
+    //@abi table fundout i64
+    struct fundout{
+        uint64_t id;
+        uint64_t to_account;
+        uint64_t asset_id;
+        int64_t amount;
+        std::string from_target;
+        std::string txid;
+        std::string from_account;
+        int64_t block_time;
+
+        uint64_t primary_key() const { return id; }
+
+        GRAPHENE_SERIALIZE(fundout, (id)(to_account)(asset_id)(amount)(from_target)(txid)(from_account)(block_time))
+    };
+    typedef multi_index<N(fundout), fundout> fund_out_index;
+
+    fund_in_index fund_in_table;
+    ctxids_index eth_confirm_table;
+    wtxids_index eth_withdraw_table;
+    fund_out_index fund_out_table;
+
 };
 
-GRAPHENE_ABI(relay, (deposit)(withdraw)(confirm))
+GRAPHENE_ABI(relay, (deposit)(withdraw)(confirmd)(confirmw))
