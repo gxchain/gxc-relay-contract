@@ -24,11 +24,11 @@ public:
         int64_t asset_amount = get_action_asset_amount();
         uint64_t asset_id = get_action_asset_id();
         graphene_assert(asset_id == 1, "Only support GXC ");
-        graphene_assert(asset_amount >= min_deposit, "Must greater than minnumber ");
+        graphene_assert(asset_amount >= MIN_DEPOSIT, "Must greater than minnumber ");
         contract_asset amount{asset_amount, asset_id};
         uint64_t id_number = records_table.available_primary_key();
-        auto coin_kind = find(targets.begin(), targets.end(), target);
-        graphene_assert(coin_kind != targets.end(), "invalid chain name");
+        auto coin_kind = find(TARGETS.begin(), TARGETS.end(), target);
+        graphene_assert(coin_kind != TARGETS.end(), "invalid chain name");
         uint64_t sender = get_trx_sender();
         records_table.emplace(sender, [&](auto &o) {
             o.id = id_number;
@@ -46,10 +46,10 @@ public:
     {
         int64_t account_id = get_account_id(to_account.c_str(), to_account.size());
         uint64_t sender = get_trx_sender();
-        auto coin_kind = find(targets.begin(), targets.end(), from_target);
+        auto coin_kind = find(TARGETS.begin(), TARGETS.end(), from_target);
         graphene_assert(amount.asset_id == 1, "Only support GXC");
-        graphene_assert(amount.amount >= min_withdraw, "Must greater than min number");
-        graphene_assert(coin_kind != targets.end(), "Invalid target");
+        graphene_assert(amount.amount >= MIN_WITHDRAW, "Must greater than min number");
+        graphene_assert(coin_kind != TARGETS.end(), "Invalid target");
         graphene_assert(sender == adminAccount, "No authority");
         graphene_assert(account_id >= 0, "Invalid account_name to_account");
         graphene_assert(amount.amount > 0, "Invalid amount");
@@ -64,7 +64,7 @@ public:
                 o.id = id_number;
             });
             auto begin_iterator = Eth_withdraw_table.begin();
-            if (id_number - (*begin_iterator).id > 100)
+            if (id_number - (*begin_iterator).id > TXID_LIST_LIMIT)
             {
                 Eth_withdraw_table.erase(begin_iterator);
             }
@@ -94,7 +94,7 @@ public:
                 o.id = id_number;
             });
             auto begin_iterator = Eth_confirm_table.begin();
-            if (id_number - (*begin_iterator).id > 100)
+            if (id_number - (*begin_iterator).id > TXID_LIST_LIMIT)
             {
                 Eth_confirm_table.erase(begin_iterator);
             }
@@ -105,20 +105,12 @@ public:
         }
     }
 
-    //@abi action
-    void adjust(uint64_t deposit_min, uint64_t withdraw_min)
-    {
-        uint64_t sender = get_trx_sender();
-        graphene_assert(sender == adminAccount, "No authority");
-        min_deposit = deposit_min;
-        min_withdraw = withdraw_min;
-    }
-
 private:
     const uint64_t adminAccount = 4707;
-    std::vector<std::string> targets = {"ETH"};
-    uint64_t min_deposit = 50000;
-    uint64_t min_withdraw = 50000;
+    const std::vector<std::string> TARGETS = {"ETH"};
+    const uint64_t MIN_DEPOSIT = 50000;
+    const uint64_t MIN_WITHDRAW = 50000;
+    const uint64_t TXID_LIST_LIMIT = 10000;
 
     //@abi table ctxids i64
     struct ctxids
@@ -168,4 +160,4 @@ private:
     wtxids_index Eth_withdraw_table;
 };
 
-GRAPHENE_ABI(relay, (deposit)(withdraw)(confirm)(adjust))
+GRAPHENE_ABI(relay, (deposit)(withdraw)(confirm))
