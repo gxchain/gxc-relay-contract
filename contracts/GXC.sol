@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
 
 contract GXC is ERC20PresetMinterPauser {
     bytes32 public constant ADJUST_ROLE = keccak256("ADJUST_ROLE");
+    bytes32 public constant DELIVER_ROLE = keccak256("DELIVER_ROLE");
 
     string[10] private txidArray;
     uint256 arrayLength = 10;
@@ -17,7 +18,7 @@ contract GXC is ERC20PresetMinterPauser {
 
     uint8 decimals_ = 5;
 
-    event Mint(address indexed to, uint256 amount, string from, string txid);
+    event DELIVER(address indexed to, uint256 amount, string from, string txid);
 
     event Burn(address indexed from, uint256 amount, string to);
 
@@ -29,16 +30,18 @@ contract GXC is ERC20PresetMinterPauser {
         _setupRole(ADJUST_ROLE, _msgSender());
     }
 
-    function mint(
+
+    function deliver(
         address to,
         uint256 amount,
         string memory from,
         string memory txid
-    ) public virtual {
+    ) public {
         require(
             amount >= minMint,
             "The minimum value must be greater than minMint"
         );
+        require(hasRole(DELIVER_ROLE, _msgSender()), "Must have deliver role to deliver");
         for (uint256 i = 0; i < arrayLength; i++) {
             require(
                 keccak256(abi.encodePacked(txidArray[i])) !=
@@ -49,11 +52,11 @@ contract GXC is ERC20PresetMinterPauser {
         uint256 id_number = id % arrayLength;
         txidArray[id_number] = txid;
         id++;
-        super.mint(to, amount);
-        emit Mint(to, amount, from, txid);
+        transfer(to, amount);
+        emit DELIVER(to, amount, from, txid);
     }
 
-    function burn(uint256 amount, string memory to) public virtual {
+    function burn(uint256 amount, string memory to) public {
         require(
             amount >= minBurn,
             "The minimum value must be greater than minBurn"

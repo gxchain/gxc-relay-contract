@@ -907,12 +907,12 @@
     "3": {
       "events": {},
       "links": {},
-      "address": "0x123110Eb259DbE0549cf0502521AB24474a8Efd1",
-      "transactionHash": "0x694ef4e431b232c146b0bc5d880981a98372004a5d62391915cd74d874c0c5dc"
+      "address": "0x2d7EcC8f7a13430639A929fD9b24a77C2603e481",
+      "transactionHash": "0x29b97cc33c968fd254fa058144df4edde62ba64dd6c9585e8a63660bfd2cd7e9"
     }
   },
   "schemaVersion": "3.2.3",
-  "updatedAt": "2020-08-21T03:25:00.210Z",
+  "updatedAt": "2020-08-24T11:37:02.612Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}
