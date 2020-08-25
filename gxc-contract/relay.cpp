@@ -55,13 +55,13 @@ public:
         graphene_assert(amount.amount > 0, "Invalid amount");
         if (from_target == "ETH")
         {
-            auto txid_uint = graphenelib::string_to_name(txid.c_str());
-            auto txid_iterator = eth_withdraw_table.find(txid_uint);
-            graphene_assert(txid_iterator == eth_withdraw_table.end(), "The txid is existed, be honest");
+            for(auto id_begin = eth_withdraw_table.begin(); id_begin != eth_withdraw_table.end(); id_begin++){
+                 graphene_assert((*id_begin).txid != txid, "The txid is existed, be honest");
+            }
             auto id_number = eth_withdraw_table.available_primary_key();
             eth_withdraw_table.emplace(sender, [&](auto &o) {
-                o.txid = txid_uint;
                 o.id = id_number;
+                o.txid = txid;
             });
             auto begin_iterator = eth_withdraw_table.begin();
             if (id_number - (*begin_iterator).id > TXID_LIST_LIMIT)
@@ -95,15 +95,17 @@ public:
         auto idx = fund_in_table.find(order_id);
         graphene_assert(idx != fund_in_table.end(), "There is no that order_id");
         graphene_assert((*idx).target == target, "Unmatched chain name");
+        graphene_assert((*idx).asset_id == amount.asset_id, "Unmatched assert id");
+        graphene_assert((*idx).amount == amount.amount, "Unmatched assert amount");
         if (target == "ETH")
         {
-            auto txid_uint = graphenelib::string_to_name(txid.c_str());
-            auto txid_iterator = eth_confirm_table.find(txid_uint);
-            graphene_assert(txid_iterator == eth_confirm_table.end(), "The txid is existed, be honest");
+            for(auto id_begin = eth_confirm_table.begin(); id_begin != eth_confirm_table.end(); id_begin++){
+                 graphene_assert((*id_begin).txid != txid, "The txid is existed, be honest");
+            }
             auto id_number = eth_confirm_table.available_primary_key();
             eth_confirm_table.emplace(sender, [&](auto &o) {
-                o.txid = txid_uint;
                 o.id = id_number;
+                o.txid = txid;
             });
             auto begin_iterator = eth_confirm_table.begin();
             if (id_number - (*begin_iterator).id > TXID_LIST_LIMIT)
@@ -124,12 +126,17 @@ public:
        graphene_assert(sender == adminAccount, "You have no authority");
        int64_t block_time_now = get_head_block_time();
        auto idx = fund_out_table.begin();
-       for (; idx != fund_out_table.end(); idx++){
-           if( (*idx).block_time + time_gap >= block_time_now ){
-               withdraw_asset(_self, (*idx).to_account, (*idx).asset_id, (*idx).amount);
-               fund_out_table.erase(idx);
+       auto number_index = 0;
+       graphene_assert(idx != fund_out_table.end(), "There id nothing to withdraw");
+       while((idx != fund_out_table.end()) && number_index < NUMBER_LIMIT){
+           if(((*idx).block_time + TIME_GAP) > block_time_now){
+               break;
            }
-       }
+           withdraw_asset(_self, (*idx).to_account, (*idx).asset_id, (*idx).amount);
+           idx = fund_out_table.erase(idx);
+           number_index++;
+     }
+
     }
 
 private:
@@ -138,27 +145,28 @@ private:
     const uint64_t MIN_DEPOSIT = 50000;
     const uint64_t MIN_WITHDRAW = 50000;
     const uint64_t TXID_LIST_LIMIT = 10000;
-    const int64_t time_gap = 86400;
+    const int64_t TIME_GAP = 86400;
+    const uint64_t NUMBER_LIMIT = 10;
 
     //@abi table ctxids i64
     struct ctxids
     {
-        uint64_t txid;
         uint64_t id;
+        std::string txid;
 
-        uint64_t primary_key() const { return txid; }
-        GRAPHENE_SERIALIZE(ctxids, (txid)(id))
+        uint64_t primary_key() const { return id; }
+        GRAPHENE_SERIALIZE(ctxids, (id)(txid))
     };
     typedef multi_index<N(ctxids), ctxids> ctxids_index;
 
     //@abi table wtxids i64
     struct wtxids
     {
-        uint64_t txid;
         uint64_t id;
+        std::string txid;
 
-        uint64_t primary_key() const { return txid; }
-        GRAPHENE_SERIALIZE(wtxids, (txid)(id))
+        uint64_t primary_key() const { return id; }
+        GRAPHENE_SERIALIZE(wtxids, (id)(txid))
     };
     typedef multi_index<N(wtxids), wtxids> wtxids_index;
 
