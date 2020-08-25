@@ -13,12 +13,12 @@ contract GXC is ERC20PresetMinterPauser {
     uint256 arrayLength = 10;
     uint256 private id;
 
-    uint256 minMint = 50000;
-    uint256 minBurn = 50000;
+    uint256 private _minDeliver = 50000;
+    uint256 private _minBurn = 50000;
 
-    uint8 decimals_ = 5;
+    uint8 private decimals_ = 5;
 
-    event DELIVER(address indexed to, uint256 amount, string from, string txid);
+    event Deliver(address indexed to, uint256 amount, string from, string txid);
 
     event Burn(address indexed from, uint256 amount, string to);
 
@@ -38,8 +38,8 @@ contract GXC is ERC20PresetMinterPauser {
         string memory txid
     ) public {
         require(
-            amount >= minMint,
-            "The minimum value must be greater than minMint"
+            amount >= _minDeliver,
+            "The minimum value must be greater than minDeliver"
         );
         require(hasRole(DELIVER_ROLE, _msgSender()), "Must have deliver role to deliver");
         for (uint256 i = 0; i < arrayLength; i++) {
@@ -53,28 +53,31 @@ contract GXC is ERC20PresetMinterPauser {
         txidArray[id_number] = txid;
         id++;
         transfer(to, amount);
-        emit DELIVER(to, amount, from, txid);
+        emit Deliver(to, amount, from, txid);
     }
 
     function burn(uint256 amount, string memory to) public {
         require(
-            amount >= minBurn,
+            amount >= _minBurn,
             "The minimum value must be greater than minBurn"
         );
         super.burn(amount);
         emit Burn(msg.sender, amount, to);
     }
 
-    function adjustMinNumber(uint256 _burnMin, uint256 _mintMin)
+    function adjustParams(uint256 minDeliver , uint256 minBurn)
         public
-        virtual
     {
         require(hasRole(ADJUST_ROLE, _msgSender()), "Adjust role required");
-        minMint = _mintMin;
-        minBurn = _burnMin;
+        _minDeliver = minDeliver;
+        _minBurn = minBurn;
     }
 
-    function getTxidArray() public returns (string[10] memory) {
+    function getParams() public returns (uint256 ,uint256){
+        return (_minDeliver, _minBurn);
+    }
+
+    function getTxids() public returns (string[10] memory) {
         return txidArray;
     }
 }
