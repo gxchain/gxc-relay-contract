@@ -32,12 +32,12 @@ PAYABLE deposit(std::string target, std::string addr){
 
 中继服务在监听到用户充值操作后，执行以下操作：
 
-- 在目标链的外部中继合约上调用`mint`操作，向用户指定的地址发行指定数量资产
+- 在目标链的外部中继合约上调用`deliver`操作，向用户指定的地址发行指定数量资产
 - 获取外部中继合约调用的 txid
 
 ##### 充值确认
 
-中继服务会不断获取最新的 order 记录，对新的记录进行队列处理，向指定的链发起`mint`操作，在`mint`成功后，把该交易的 txid 和 order 的信息作为参数，发送到跨链中继合约，对订单进行确认
+中继服务会不断获取最新的 order 记录，对新的记录进行队列处理，向指定的链发起`deliver`操作，在`deliver`成功后，把该交易的 txid 和 order 的信息作为参数，发送到跨链中继合约，对订单进行确认
 
 ```c++
 ACTION confirmd(uint64_t order_id, std::string target, std::string addr, uint64_t amount, uint64_t asset){
@@ -163,13 +163,14 @@ function adjustParams(
 #### 充值监听
 
 - 监听 gxchain 跨链中继合约的`deposit`操作
-- 向目标链发起`mint`操作
-- 等待`mint`操作完成，将`mint`操作对应的 txid 和订单信息作为参数，调用 gxchain 跨链中继合约的`confirm`方法
+- 向目标链发起`deliver`操作
+- 等待`deliver`操作完成，将`deliver`操作对应的 txid 和订单信息作为参数，调用 gxchain 跨链中继合约的`confirmd`方法
 
 #### 提现监听
 
 - 监听目标链上的`burn`事件
 - 等待`burn`完成，将`burn`操作对应的(txid,amount,gxcAccount)作为参数，调用 gxchain 跨链中继合约的`withdraw`方法
+- 每隔一段时间,调用`confirmw`方法，完成`withdraw`中满足时间需求的withdraw请求。
 
 #### 应用接口
 
