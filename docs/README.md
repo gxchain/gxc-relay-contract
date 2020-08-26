@@ -76,21 +76,27 @@ ACTION comfirmw(){
 #### 参与者
 
 - 用户（User）
-- 中继服务（Owner）
+- 中继服务（DELIVER_ROLE）
 
 #### 行为
 
+##### 预分发
+合约拥有者先将一定数量的token发送给中继服务代表的DELIVER_ROLE,之后由DELIVER_ROLE来分发GXC资产。
 ##### 充值/发行
 
-中继服务在 GXChain 上监听到用户充值操作时，调用发行接口`mint`来向指定地址发行 GXC 资产，以 Mintable-ERC20 为例
+中继服务在 GXChain 上监听到用户充值操作时，调用发行接口`deliver`来向指定地址分发 GXC 资产，以 Mintable-ERC20 为例
 
 ```js
-function mint(address account, uint256 amount) {
-   require(hasRole(MINTER_ROLE, _msgSender()), "must have minter role to mint");
-   require(account != address(0), "mint to the zero address");
-  _totalSupply = _totalSupply.add(amount);
-  _balances[account] = _balances[account].add(amount);
-  emit Transfer(address(0), account, amount);
+event Deliver(address indexed to, uint256 amount, string from, string txid);
+
+function deliver(
+        address to,
+        uint256 amount,
+        string memory from,
+        string memory txid
+        ) public {
+// asset is vaild DELIVER_ROLE
+// deliver the ERC20
 }
 ```
 
@@ -99,14 +105,23 @@ function mint(address account, uint256 amount) {
 用户可以通过销毁资产，同时指定 GXC 上的地址，实现资产跨链回到 GXChain，以 Burnable-ERC20 为例
 
 ```js
-event Burn(address account, uint256 amount, string gxcAccount);
+event Burn(address indexed from, uint256 amount, string to);
+function burn(
+        uint256 amount,
+        string memory to
+        ) public {
+// asset the vaild number 
+}
 
-function burn(address account, uint256 amount, string gxcAccount) {
-   require(account != address(0), "burn from the zero address");
-  _balances[account] = _balances[account].sub(amount, " burn amount exceeds balance");
-  _totalSupply = _totalSupply.sub(amount);
-  emit Transfer(account, address(0), amount);
-  emit Burn(account, amount, gxcAccount)
+```
+##### 修改最小的发行/销毁的数量
+合约的拥有者可以修改单次分发和销毁的最小数量
+```js
+function adjustParams(
+        uint256 minDeliver, 
+        uint256 minBurn
+        ) public {
+// adjust the minnumber
 }
 ```
 
