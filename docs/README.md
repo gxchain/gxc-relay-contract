@@ -49,7 +49,7 @@ ACTION confirmd(uint64_t order_id, std::string target, std::string addr, uint64_
 
 ##### 用户提现请求
 
-中继服务监听到用户在对应目标链上的提现（销毁）操作时，发起用户提现请求操作，出于安全考虑，请求不会立即执行，而是会将请求信息和当前区块时间入表，需要24小时等待时间。
+中继服务监听到用户在对应目标链上的提现（销毁）操作时，发起用户提现请求操作，出于安全考虑，请求不会立即执行，而是会将请求信息和当前区块时间入表，需要 24 小时等待时间。
 
 ```C++
 ACTION withdraw(std::string account,asset std::string, uint64_t amount,std::string from_target, std::string txid){
@@ -62,7 +62,9 @@ ACTION withdraw(std::string account,asset std::string, uint64_t amount,std::stri
 ```
 
 ##### 提现确认
-中继服务将监听提现表中的内容，定时地同意提现表中已经达成的24小时确认请求，将提现操作完成。
+
+中继服务将监听提现表中的内容，定时地同意提现表中已经达成的 24 小时确认请求，将提现操作完成。
+
 ```C++
 ACTION comfirmw(){
   // assert is valid sender
@@ -81,7 +83,9 @@ ACTION comfirmw(){
 #### 行为
 
 ##### 预分发
-合约拥有者先将一定数量的token发送给中继服务代表的DELIVER_ROLE,之后由DELIVER_ROLE来分发GXC资产。
+
+合约拥有者先将一定数量的 token 发送给中继服务代表的 DELIVER_ROLE,之后由 DELIVER_ROLE 来分发 GXC 资产。
+
 ##### 充值/发行
 
 中继服务在 GXChain 上监听到用户充值操作时，调用发行接口`deliver`来向指定地址分发 GXC 资产，以 Mintable-ERC20 为例
@@ -110,15 +114,18 @@ function burn(
         uint256 amount,
         string memory to
         ) public {
-// asset the vaild number 
+// asset the vaild number
 }
 
 ```
+
 ##### 修改最小的发行/销毁的数量
+
 合约的拥有者可以修改单次分发和销毁的最小数量
+
 ```js
 function adjustParams(
-        uint256 minDeliver, 
+        uint256 minDeliver,
         uint256 minBurn
         ) public {
 // adjust the minnumber
@@ -141,6 +148,10 @@ function adjustParams(
 - 数量(Number)：输入转账数量
 - 提交操作：通过 gcatter 调用 client.callContract("relay-contract","deposit",{target:...,addr:...},"10 GXC",true)
 
+**交互流程**
+
+<img src="./image-20200826172126006.png" alt="image-20200826172126006" style="zoom:20%;" />
+
 #### 提现
 
 <img src="./image-20200807170944739.png" alt="image-20200807170944739" style="zoom:20%;" />
@@ -150,6 +161,10 @@ function adjustParams(
 - 目标账户(文本)：输入 GXC 账户地址，默认展示 gscatter 登录的 gxc 地址
 - 数量(Number)：输入跨链转账数量
 - 提交操作：根据选定的目标链完成登录提示，使用目标链的插件（如 metamask）调用目标合约的`burn`方法完成目标链资产销毁(转回 gxc 主链)
+
+**交互流程**
+
+<img src="./image-20200826172242433.png" alt="image-20200826172242433" style="zoom:20%;" />
 
 #### 其他
 
