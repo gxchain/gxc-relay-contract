@@ -83,7 +83,9 @@ ACTION comfirmw(){
 #### 行为
 
 ##### 预分发
-合约拥有者先将一定数量的token发送给中继服务代表的DELIVER_ROLE,之后由DELIVER_ROLE来分发GXC资产。
+
+合约拥有者先将一定数量的 token 发送给中继服务代表的 DELIVER_ROLE,之后由 DELIVER_ROLE 来分发 GXC 资产。
+
 ##### 充值/发行
 
 中继服务在 GXChain 上监听到用户充值操作时，调用发行接口`deliver`来向指定地址分发 GXC 资产，以 Mintable-ERC20 为例
@@ -112,15 +114,18 @@ function burn(
         uint256 amount,
         string memory to
         ) public {
-// asset the vaild number 
+// asset the vaild number
 }
 
 ```
+
 ##### 修改最小的发行/销毁的数量
+
 合约的拥有者可以修改单次分发和销毁的最小数量
+
 ```js
 function adjustParams(
-        uint256 minDeliver, 
+        uint256 minDeliver,
         uint256 minBurn
         ) public {
 // adjust the minnumber
@@ -159,7 +164,7 @@ function adjustParams(
 
 **交互流程**
 
-<img src="/Users/david/Projects/sol/gxc/docs/image-20200826172242433.png" alt="image-20200826172242433" style="zoom:20%;" />
+<img src="./image-20200826172242433.png" alt="image-20200826172242433" style="zoom:20%;" />
 
 #### 其他
 
