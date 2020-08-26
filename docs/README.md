@@ -49,7 +49,7 @@ ACTION confirmd(uint64_t order_id, std::string target, std::string addr, uint64_
 
 ##### 用户提现请求
 
-中继服务监听到用户在对应目标链上的提现（销毁）操作时，发起用户提现请求操作，出于安全考虑，请求不会立即执行，而是会将请求信息和当前区块时间入表，需要24小时等待时间。
+中继服务监听到用户在对应目标链上的提现（销毁）操作时，发起用户提现请求操作，出于安全考虑，请求不会立即执行，而是会将请求信息和当前区块时间入表，需要 24 小时等待时间。
 
 ```C++
 ACTION withdraw(std::string account,asset std::string, uint64_t amount,std::string from_target, std::string txid){
@@ -62,7 +62,9 @@ ACTION withdraw(std::string account,asset std::string, uint64_t amount,std::stri
 ```
 
 ##### 提现确认
-中继服务将监听提现表中的内容，定时地同意提现表中已经达成的24小时确认请求，将提现操作完成。
+
+中继服务将监听提现表中的内容，定时地同意提现表中已经达成的 24 小时确认请求，将提现操作完成。
+
 ```C++
 ACTION comfirmw(){
   // assert is valid sender
@@ -126,6 +128,10 @@ function burn(address account, uint256 amount, string gxcAccount) {
 - 数量(Number)：输入转账数量
 - 提交操作：通过 gcatter 调用 client.callContract("relay-contract","deposit",{target:...,addr:...},"10 GXC",true)
 
+**交互流程**
+
+<img src="./image-20200826172126006.png" alt="image-20200826172126006" style="zoom:20%;" />
+
 #### 提现
 
 <img src="./image-20200807170944739.png" alt="image-20200807170944739" style="zoom:20%;" />
@@ -135,6 +141,10 @@ function burn(address account, uint256 amount, string gxcAccount) {
 - 目标账户(文本)：输入 GXC 账户地址，默认展示 gscatter 登录的 gxc 地址
 - 数量(Number)：输入跨链转账数量
 - 提交操作：根据选定的目标链完成登录提示，使用目标链的插件（如 metamask）调用目标合约的`burn`方法完成目标链资产销毁(转回 gxc 主链)
+
+**交互流程**
+
+<img src="/Users/david/Projects/sol/gxc/docs/image-20200826172242433.png" alt="image-20200826172242433" style="zoom:20%;" />
 
 #### 其他
 
