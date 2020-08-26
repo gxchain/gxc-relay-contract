@@ -61,7 +61,7 @@ ACTION withdraw(std::string account,asset std::string, uint64_t amount,std::stri
 }
 ```
 
-##### 体现确认
+##### 提现确认
 中继服务将监听提现表中的内容，定时地同意提现表中已经达成的24小时确认请求，将提现操作完成。
 ```C++
 ACTION comfirmw(){
