@@ -40,24 +40,34 @@ PAYABLE deposit(std::string target, std::string addr){
 中继服务会不断获取最新的 order 记录，对新的记录进行队列处理，向指定的链发起`mint`操作，在`mint`成功后，把该交易的 txid 和 order 的信息作为参数，发送到跨链中继合约，对订单进行确认
 
 ```c++
-ACTION confirm(uint64_t order_id, std::string target, std::string addr, uint64_t amount, uint64_t asset){
+ACTION confirmd(uint64_t order_id, std::string target, std::string addr, uint64_t amount, uint64_t asset){
   // assert is valid sender
   // assert is (order_id,target,addr,amount,asset) match (order)
   // remove order(order_id)
 }
 ```
 
-##### 用户提现
+##### 用户提现请求
 
-中继服务监听到用户在对应目标链上的提现（销毁）操作时，发起用户提现操作，将中继合约中的资产转给指定用户
+中继服务监听到用户在对应目标链上的提现（销毁）操作时，发起用户提现请求操作，出于安全考虑，请求不会立即执行，而是会将请求信息和当前区块时间入表，需要24小时等待时间。
 
 ```C++
-PAYABLE withdraw(std::string account,asset std::string, uint64_t amount,std::string from_target, std::string txid){
+ACTION withdraw(std::string account,asset std::string, uint64_t amount,std::string from_target, std::string txid){
   // assert is valid sender
   // assert is (account) exist
   // assert is (asset) exist
   // assert is (amount) legal
   // transfer(account, asset, amount)
+}
+```
+
+##### 体现确认
+中继服务将监听提现表中的内容，定时地同意提现表中已经达成的24小时确认请求，将提现操作完成。
+```C++
+ACTION comfirmw(){
+  // assert is valid sender
+  // assert is (withdraw) exist
+  // assert the time is arrival
 }
 ```
 
