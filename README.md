@@ -28,3 +28,6 @@ npm run live // for ethereum mainnet
 ```bash
 truffle console --network ropsten
 ```
+
+### Audit
+You can view the audit results of the contract in [this directory](./audit/README.md) 
