@@ -18,7 +18,7 @@ GXChain 跨链中继初步的目的是让 GXChain 上的资产可以通过中继
 
 #### 行为
 
-##### 用户充值
+##### 跨链转出
 
 用户通过指定目标链和目标地址，转入相应资产
 
@@ -30,12 +30,12 @@ PAYABLE deposit(std::string target, std::string addr){
 }
 ```
 
-中继服务在监听到用户充值操作后，执行以下操作：
+中继服务在监听到用户跨链转出操作后，执行以下操作：
 
 - 在目标链的外部中继合约上调用`deliver`操作，向用户指定的地址发行指定数量资产
 - 获取外部中继合约调用的 txid
 
-##### 充值确认
+##### 转出确认
 
 中继服务会不断获取最新的 order 记录，对新的记录进行队列处理，向指定的链发起`deliver`操作，在`deliver`成功后，把该交易的 txid 和 order 的信息作为参数，发送到跨链中继合约，对订单进行确认
 
@@ -47,9 +47,9 @@ ACTION confirmd(uint64_t order_id, std::string target, std::string addr, uint64_
 }
 ```
 
-##### 用户提现请求
+##### 跨链转回请求
 
-中继服务监听到用户在对应目标链上的提现（销毁）操作时，发起用户提现请求操作，出于安全考虑，请求不会立即执行，而是会将请求信息和当前区块时间入表，需要 24 小时等待时间。
+中继服务监听到用户在对应目标链上的取回（销毁）操作时，发起用户取回请求操作，出于安全考虑，请求不会立即执行，而是会将请求信息和当前区块时间入表，需要 24 小时等待时间。
 
 ```C++
 ACTION withdraw(std::string account,asset std::string, uint64_t amount,std::string from_target, std::string txid){
@@ -61,9 +61,9 @@ ACTION withdraw(std::string account,asset std::string, uint64_t amount,std::stri
 }
 ```
 
-##### 提现确认
+##### 取回确认
 
-中继服务将监听提现表中的内容，定时地同意提现表中已经达成的 24 小时确认请求，将提现操作完成。
+中继服务将监听取回表中的内容，定时地同意取回表中已经达成的 24 小时确认请求，将取回操作完成。
 
 ```C++
 ACTION comfirmw(){
@@ -86,9 +86,9 @@ ACTION comfirmw(){
 
 合约拥有者先将一定数量的 token 发送给中继服务代表的 DELIVER_ROLE,之后由 DELIVER_ROLE 来分发 GXC 资产。
 
-##### 充值/发行
+##### 转出/发行
 
-中继服务在 GXChain 上监听到用户充值操作时，调用发行接口`deliver`来向指定地址分发 GXC 资产，以 Mintable-ERC20 为例
+中继服务在 GXChain 上监听到用户跨链转出操作时，调用发行接口`deliver`来向指定地址分发 GXC 资产，以 Mintable-ERC20 为例
 
 ```js
 event Deliver(address indexed to, uint256 amount, string from, string txid);
@@ -104,7 +104,7 @@ function deliver(
 }
 ```
 
-##### 提现/销毁
+##### 取回/销毁
 
 用户可以通过销毁资产，同时指定 GXC 上的地址，实现资产跨链回到 GXChain，以 Burnable-ERC20 为例
 
@@ -138,9 +138,9 @@ function adjustParams(
 
 ### 3. 交互界面
 
-#### 充值
+#### 跨链转出
 
-<img src="./image-20200807170954612.png" alt="image-20200807170954612" style="zoom:20%;" />
+<img src="./image-20200831125704038.png" style="zoom:20%;" />
 
 - 跨链方式：两个单选框，左边展示 GXChain 资产列表，右边展示跨链目标资产列表
 
@@ -150,11 +150,11 @@ function adjustParams(
 
 **交互流程**
 
-<img src="./image-20200826172126006.png" alt="image-20200826172126006" style="zoom:20%;" />
+<img src="./image-20200831125630356.png" style="zoom:20%;" />
 
-#### 提现
+#### 跨链取回
 
-<img src="./image-20200807170944739.png" alt="image-20200807170944739" style="zoom:20%;" />
+<img src="image-20200831125718069.png" style="zoom:20%;" />
 
 - 跨链方式：两个单选框，左边展示跨链目标资产列表，右边展示 GXChain 资产列表
 
@@ -164,28 +164,28 @@ function adjustParams(
 
 **交互流程**
 
-<img src="./image-20200826172242433.png" alt="image-20200826172242433" style="zoom:20%;" />
+<img src="./image-20200831125850828.png" style="zoom:20%;" />
 
 #### 其他
 
 - 实时展示最近跨链记录：动态表单|弹幕
-- 实时展示当前充值订单的处理状态
-- 实时展示当前提现订单的处理状态
+- 实时展示当前转出订单的处理状态
+- 实时展示当前取回订单的处理状态
 - 图表展示转入转出统计等信息
 
 ### 4. 中继服务
 
-#### 充值监听
+#### 转出监听
 
 - 监听 gxchain 跨链中继合约的`deposit`操作
 - 向目标链发起`deliver`操作
 - 等待`deliver`操作完成，将`deliver`操作对应的 txid 和订单信息作为参数，调用 gxchain 跨链中继合约的`confirmd`方法
 
-#### 提现监听
+#### 取回监听
 
 - 监听目标链上的`burn`事件
 - 等待`burn`完成，将`burn`操作对应的(txid,amount,gxcAccount)作为参数，调用 gxchain 跨链中继合约的`withdraw`方法
-- 每隔一段时间,调用`confirmw`方法，完成`withdraw`中满足时间需求的withdraw请求。
+- 每隔一段时间,调用`confirmw`方法，完成`withdraw`中满足时间需求的 withdraw 请求。
 
 #### 应用接口
 
@@ -196,5 +196,5 @@ function adjustParams(
 ##### HTTP 接口
 
 - 获取最近交易列表
-- 获取账户充值记录
-- 获取账户提现记录
+- 获取账户转出记录
+- 获取账户取回记录
