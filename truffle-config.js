@@ -19,10 +19,7 @@
  */
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-// const infuraKey = "fj4jll3k.....";
-//
-const fs = require('fs');
-const mnemonic = fs.readFileSync(".secret").toString().trim();
+require('dotenv').config();
 
 module.exports = {
   /**
@@ -66,22 +63,30 @@ module.exports = {
     // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
     // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     // },
-    ropsten:{
-      provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/3c3919ad9e0645ed929694c58b94001a`),
-      network_id: 3,       // Ropsten's id
-      gas: 5500000,        // Ropsten has a lower block limit than mainnet
+    ropsten: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.MNEMONIC,
+          `https://ropsten.infura.io/v3/3c3919ad9e0645ed929694c58b94001a`
+        ),
+      network_id: 3, // Ropsten's id
+      gas: 5500000, // Ropsten has a lower block limit than mainnet
       networkCheckTimeout: 5000,
-      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-      timeoutBlocks: 150,  // # of blocks before a deployment times out  (minimum/default: 50)
-      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+      confirmations: 2, // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 150, // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true, // Skip dry run before migrations? (default: false for public nets )
     },
     live: {
-      provider: () => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/939c76fc756341f389051729d8a2f13a`),
+      provider: () =>
+        new HDWalletProvider(
+          process.env.MNEMONIC,
+          `https://mainnet.infura.io/v3/939c76fc756341f389051729d8a2f13a`
+        ),
       network_id: 1,
       networkCheckTimeout: 5000,
       gas: 6000000,
       gasPrice: 100 * 1000000000,
-      skipDryRun: true
+      skipDryRun: true,
     },
     // Useful for private networks
     // private: {
@@ -89,6 +94,14 @@ module.exports = {
     // network_id: 2111,   // This network is yours, in the cloud.
     // production: true    // Treats this network as if it was a public net. (default: false)
     // }
+  },
+
+  plugins: ['truffle-plugin-verify'],
+  api_keys: {
+    etherscan: process.env.ETHERSCAN_API_KEY,
+  },
+  verify: {
+    preamble: 'Author: GXChain Core Team.\nVersion: 1.0',
   },
 
   // Set default mocha options here, use special reporters etc.
@@ -99,7 +112,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.6.2",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: '0.6.2', // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       // settings: {          // See the solidity docs for advice about optimization and evmVersion
       //  optimizer: {
