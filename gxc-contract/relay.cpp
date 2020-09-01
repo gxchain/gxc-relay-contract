@@ -142,8 +142,8 @@ public:
 private:
     const uint64_t adminAccount = 4707;
     const std::vector<std::string> TARGETS = {"ETH"};
-    const uint64_t MIN_DEPOSIT = 50000;
-    const uint64_t MIN_WITHDRAW = 50000;
+    const uint64_t MIN_DEPOSIT = 1000000;
+    const uint64_t MIN_WITHDRAW = 1000000;
     const uint64_t TXID_LIST_LIMIT = 10000;
     const int64_t TIME_GAP = 86400;
     const uint64_t NUMBER_LIMIT = 10;
