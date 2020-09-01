@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.4.21 <0.8.0;
+pragma solidity 0.6.2;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
@@ -9,12 +9,12 @@ contract GXC is ERC20PresetMinterPauser {
     bytes32 public constant ADJUST_ROLE = keccak256("ADJUST_ROLE");
     bytes32 public constant DELIVER_ROLE = keccak256("DELIVER_ROLE");
 
-    string[1000] private txidArray;
-    uint256 arrayLength = 1000;
+    string[100] private txidArray;
+    uint256 arrayLength = 100;
     uint256 private id;
 
-    uint256 private _minDeliver = 500000;
-    uint256 private _minBurn = 500000;
+    uint256 private _minDeliver = 50000;
+    uint256 private _minBurn = 50000;
 
     uint8 private decimals_ = 5;
 
@@ -77,7 +77,7 @@ contract GXC is ERC20PresetMinterPauser {
         return (_minDeliver, _minBurn);
     }
 
-    function getTxids() public view returns (string[1000] memory) {
+    function getTxids() public view returns (string[100] memory) {
         return txidArray;
     }
 }
