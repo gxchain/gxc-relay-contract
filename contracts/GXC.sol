@@ -9,12 +9,12 @@ contract GXC is ERC20PresetMinterPauser {
     bytes32 public constant ADJUST_ROLE = keccak256("ADJUST_ROLE");
     bytes32 public constant DELIVER_ROLE = keccak256("DELIVER_ROLE");
 
-    string[10] private txidArray;
-    uint256 arrayLength = 10;
+    string[1000] private txidArray;
+    uint256 arrayLength = 1000;
     uint256 private id;
 
-    uint256 private _minDeliver = 50000;
-    uint256 private _minBurn = 50000;
+    uint256 private _minDeliver = 500000;
+    uint256 private _minBurn = 500000;
 
     uint8 private decimals_ = 5;
 
@@ -73,11 +73,11 @@ contract GXC is ERC20PresetMinterPauser {
         _minBurn = minBurn;
     }
 
-    function getParams() public returns (uint256 ,uint256){
+    function getParams() public view returns (uint256 ,uint256){
         return (_minDeliver, _minBurn);
     }
 
-    function getTxids() public returns (string[10] memory) {
+    function getTxids() public view returns (string[1000] memory) {
         return txidArray;
     }
 }
