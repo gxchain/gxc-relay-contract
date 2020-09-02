@@ -13,7 +13,7 @@ class relay : public contract
 {
 public:
     relay(uint64_t account_id)
-        : contract(account_id), fund_in_table(_self, _self), eth_confirm_table(_self, _self), eth_withdraw_table(_self, _self), fund_out_table(_self, _self)
+        : contract(account_id), fund_in_table(_self, _self), eth_confirm_table(_self, _self), eth_withdraw_table(_self, _self), fund_out_table(_self, _self), nonce_table(_self, _self)
     {
     }
 
@@ -39,6 +39,28 @@ public:
             o.to = addr;
             o.state = 0;
         });
+    }
+
+    // @abi action
+    // @abi payable
+    void deposit2(std::string target, std::string addr, std::string nonce)
+    {
+        uint64_t sender = get_trx_sender();
+        graphene_assert(sender == adminAccount, "You have no authority");
+        for(auto id_begin = nonce_table.begin(); id_begin != nonce_table.end(); id_begin++){
+                 graphene_assert((*id_begin).nonce != nonce, "The nonce is existed");
+            }
+        deposit(target,addr);
+        auto id_number = nonce_table.available_primary_key();
+        nonce_table.emplace(sender, [&](auto &o) {
+            o.id = id_number;
+            o.nonce = nonce;
+        });
+        auto begin_iterator = nonce_table.begin();
+        if (id_number - (*begin_iterator).id > NONCE_LIMIT)
+        {
+            nonce_table.erase(begin_iterator);
+        }   
     }
 
     //@abi action
@@ -147,6 +169,18 @@ private:
     const uint64_t TXID_LIST_LIMIT = 10000;
     const int64_t TIME_GAP = 86400;
     const uint64_t NUMBER_LIMIT = 10;
+    const uint64_t NONCE_LIMIT = 100;
+
+    //@abi table nonceids i64
+    struct nonceids
+    {
+        uint64_t id;
+        std::string nonce;
+
+        uint64_t primary_key() const { return id; }
+        GRAPHENE_SERIALIZE(nonceids, (id)(nonce))
+    };
+    typedef multi_index<N(nonceids), nonceids> nonceids_index;
 
     //@abi table ctxids i64
     struct ctxids
@@ -212,7 +246,8 @@ private:
     ctxids_index eth_confirm_table;
     wtxids_index eth_withdraw_table;
     fund_out_index fund_out_table;
+    nonceids_index nonce_table;
 
 };
 
-GRAPHENE_ABI(relay, (deposit)(withdraw)(confirmd)(confirmw))
+GRAPHENE_ABI(relay, (deposit)(deposit2)(withdraw)(confirmd)(confirmw))
