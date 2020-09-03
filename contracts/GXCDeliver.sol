@@ -3,7 +3,7 @@ pragma solidity 0.6.2;
 import "./GXC.sol";
 contract GXCDeliver{
     bytes32[50] private txidArray;
-    uint256 arrayLength = 50;
+    uint256 private arrayLength = 50;
     uint256 private id;
     GXC gxc;
     address ADMINACCOUNT;
