@@ -10,3 +10,5 @@ Here you can view the audit results of the GXC-Relay-Contract that provided by d
    - [慢雾智能合约安全审计报告- GXC ETH](./智能合约安全审计报告-%20GXC.pdf)
    - [Smart Contract Security Audit Report-GXC-Relay](./Smart%20Contract%20Security%20Audit%20Report-GXC-relay.pdf)
    - [Smart Contract Security Audit Report-GXC-ETH](./Smart%20Contract%20Security%20Audit%20Report%20-%20GXC.pdf)
+- Certik
+  - [Certik智能合约安全审计报告](./2020_09_04_GXChain%20Report.pdf)
