@@ -27,7 +27,4 @@ contract GXCDeliver{
         emit Deliver(to, amount, from, txid);
     }
 
-    function HasExecuted(bytes32 txid) public view returns (bool) {
-        return executedMap[txid];
-    }
 }
