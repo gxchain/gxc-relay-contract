@@ -22,7 +22,7 @@ contract GXCDeliver{
             msg.sender == ADMINACCOUNT,"Must be the adminaccount"
         );
         require(executedMap[txid] == false, "The txid has existed");
-        executedMap[txid] == true;
+        executedMap[txid] = true;
         gxc.transfer(to,amount);
         emit Deliver(to, amount, from, txid);
     }
