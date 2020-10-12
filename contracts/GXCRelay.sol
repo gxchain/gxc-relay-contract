@@ -3,8 +3,9 @@ pragma solidity 0.6.2;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract GXCRelay is AccessControl, Pausable {
+contract GXCRelay is AccessControl, Pausable, ReentrancyGuard {
     struct TokenSettings {
         bool enableDeposit;
         uint256 minDeposit;
@@ -15,8 +16,8 @@ contract GXCRelay is AccessControl, Pausable {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant DELIVER_ROLE = keccak256("DELIVER_ROLE");
 
-    TokenSettings private _ETHSettings;
-    mapping (address => TokenSettings) private _tokenSettings;
+    TokenSettings public ETHSettings;
+    mapping (address => TokenSettings) public tokenSettings;
 
     event Deposit(address indexed token, address indexed from, uint256 amount, string to);
     event DepositETH(address indexed from, uint256 amount, string to);
@@ -31,27 +32,27 @@ contract GXCRelay is AccessControl, Pausable {
         _setupRole(PAUSER_ROLE, _msgSender());
     }
 
-    function deposit(address token, uint256 amount, string memory to) public whenNotPaused {
-        require(_tokenSettings[token].enableDeposit, "Unsupported token.");
-        require(_tokenSettings[token].minDeposit <= amount, "Insufficient amount.");
+    function deposit(address token, uint256 amount, string calldata to) external whenNotPaused nonReentrant {
+        require(tokenSettings[token].enableDeposit, "Unsupported token.");
+        require(tokenSettings[token].minDeposit <= amount, "Insufficient amount.");
         IERC20(token).transferFrom(_msgSender(), address(this), amount);
         emit Deposit(token, _msgSender(), amount, to);
     }
-    function depositETH(string memory to) public payable whenNotPaused {
-        require(_ETHSettings.enableDeposit, "Unsupported token.");
-        require(_ETHSettings.minDeposit <= msg.value, "Insufficient amount.");
+    function depositETH(string calldata to) external payable whenNotPaused {
+        require(ETHSettings.enableDeposit, "Unsupported token.");
+        require(ETHSettings.minDeposit <= msg.value, "Insufficient amount.");
         emit DepositETH(_msgSender(), msg.value, to);
     }
     
-    function deliver(address token, address to, uint256 amount, string memory from, bytes32 txid) public whenNotPaused {
+    function deliver(address token, address to, uint256 amount, string calldata from, bytes32 txid) external whenNotPaused nonReentrant {
         require(hasRole(DELIVER_ROLE, _msgSender()), "Invalid sender.");
-        require(_tokenSettings[token].minDeliver <= amount, "Insufficient amount.");
+        require(tokenSettings[token].minDeliver <= amount, "Insufficient amount.");
         IERC20(token).transfer(to, amount);
         emit Deliver(token, to, amount, from, txid);
     }
-    function deliverETH(address payable to, uint256 amount, string memory from, bytes32 txid) public whenNotPaused {
+    function deliverETH(address payable to, uint256 amount, string calldata from, bytes32 txid) external whenNotPaused nonReentrant {
         require(hasRole(DELIVER_ROLE, _msgSender()), "Invalid sender.");
-        require(_ETHSettings.minDeliver <= amount, "Insufficient amount.");
+        require(ETHSettings.minDeliver <= amount, "Insufficient amount.");
         to.transfer(amount);
         emit DeliverETH(to, amount, from, txid);
     }
@@ -65,27 +66,16 @@ contract GXCRelay is AccessControl, Pausable {
         _unpause();
     }
     
-    function manageTokenSettings(address token, bool enableDeposit, uint256 minDeposit, uint256 minDeliver) public {
+    function manageTokenSettings(address token, bool enableDeposit, uint256 minDeposit, uint256 minDeliver) external {
         require(hasRole(MANAGER_ROLE, _msgSender()), "Invalid sender.");
-        _tokenSettings[token].enableDeposit = enableDeposit;
-        _tokenSettings[token].minDeposit = minDeposit;
-        _tokenSettings[token].minDeliver = minDeliver;
+        tokenSettings[token].enableDeposit = enableDeposit;
+        tokenSettings[token].minDeposit = minDeposit;
+        tokenSettings[token].minDeliver = minDeliver;
     }
-    function manageETHSettings(bool enableDeposit, uint256 minDeposit, uint256 minDeliver) public {
+    function manageETHSettings(bool enableDeposit, uint256 minDeposit, uint256 minDeliver) external {
         require(hasRole(MANAGER_ROLE, _msgSender()), "Invalid sender.");
-        _ETHSettings.enableDeposit = enableDeposit;
-        _ETHSettings.minDeposit = minDeposit;
-        _ETHSettings.minDeliver = minDeliver;
-    }
-    
-    function getTokenSettings(address token) public view returns (bool enableDeposit, uint256 minDeposit, uint256 minDeliver) {
-        enableDeposit = _tokenSettings[token].enableDeposit;
-        minDeposit = _tokenSettings[token].minDeposit;
-        minDeliver = _tokenSettings[token].minDeliver;
-    }
-    function getETHSettings() public view returns (bool enableDeposit, uint256 minDeposit, uint256 minDeliver) {
-        enableDeposit = _ETHSettings.enableDeposit;
-        minDeposit = _ETHSettings.minDeposit;
-        minDeliver = _ETHSettings.minDeliver;
+        ETHSettings.enableDeposit = enableDeposit;
+        ETHSettings.minDeposit = minDeposit;
+        ETHSettings.minDeliver = minDeliver;
     }
 }
