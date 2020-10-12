@@ -1,5 +1,5 @@
 const deliver = artifacts.require('GXCDeliver');
 
 module.exports = function(deployer) {
-  deployer.deploy(deliver, '0x04dC2FbA33E82F606aB57cf5CEfB4eF729530671','0x7BEE40ECB2cAFf57ea9020234960e1a72b770Dc7');
+  deployer.deploy(deliver, '0x2e93FE8d550a7B7E7b2e561cd45ceBccbAa79358','0x8A7AB6894860949e75a94420DCa2D5Ea9Cbe31C9');
 };
