@@ -176,7 +176,7 @@ public:
        if(asset_itr == coin_table.end()){
            coin_table.emplace(sender, [&](auto &o){
                o.asset_id = asset_id;
-               o.enable_transfer = 1;
+               o.enable_transfer = enabletransfer;
                o.min_deposit = mindeposit;
                o.min_withdraw = minwithdraw;
            });
