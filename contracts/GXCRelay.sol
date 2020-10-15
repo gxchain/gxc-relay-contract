@@ -19,11 +19,19 @@ contract GXCRelay is AccessControl, Pausable, ReentrancyGuard {
     TokenSettings public ETHSettings;
     mapping (address => TokenSettings) public tokenSettings;
 
+    mapping(bytes32 => bool) public txidMap;
+
     event Deposit(address indexed token, address indexed from, uint256 amount, string to);
     event DepositETH(address indexed from, uint256 amount, string to);
     
     event Deliver(address indexed token, address indexed to, uint256 amount, string from, bytes32 txid);
     event DeliverETH(address indexed to, uint256 amount, string from, bytes32 txid);
+
+    modifier checkTxid(bytes32 txid) {
+        require(txidMap[txid] == false, "Invalid txid.");
+        txidMap[txid] = true;
+        _;
+    }
 
     constructor() public {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -44,13 +52,13 @@ contract GXCRelay is AccessControl, Pausable, ReentrancyGuard {
         emit DepositETH(_msgSender(), msg.value, to);
     }
     
-    function deliver(address token, address to, uint256 amount, string calldata from, bytes32 txid) external whenNotPaused nonReentrant {
+    function deliver(address token, address to, uint256 amount, string calldata from, bytes32 txid) external whenNotPaused checkTxid(txid) {
         require(hasRole(DELIVER_ROLE, _msgSender()), "Invalid sender.");
         require(tokenSettings[token].minDeliver <= amount, "Insufficient amount.");
         IERC20(token).transfer(to, amount);
         emit Deliver(token, to, amount, from, txid);
     }
-    function deliverETH(address payable to, uint256 amount, string calldata from, bytes32 txid) external whenNotPaused nonReentrant {
+    function deliverETH(address payable to, uint256 amount, string calldata from, bytes32 txid) external whenNotPaused checkTxid(txid) {
         require(hasRole(DELIVER_ROLE, _msgSender()), "Invalid sender.");
         require(ETHSettings.minDeliver <= amount, "Insufficient amount.");
         to.transfer(amount);
