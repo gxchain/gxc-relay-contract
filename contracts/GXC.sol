@@ -10,13 +10,13 @@ contract GXC is ERC20PresetMinterPauser {
     bytes32 public constant DELIVER_ROLE = keccak256("DELIVER_ROLE");
 
     string[100] private txidArray;
-    uint256 arrayLength = 100;
+    uint256 constant arrayLength = 100;
     uint256 private id;
 
     uint256 private _minDeliver = 50000;
     uint256 private _minBurn = 50000;
 
-    uint8 private decimals_ = 5;
+    uint8 private constant decimals_ = 5;
 
     event Deliver(address indexed to, uint256 amount, string from, string txid);
 

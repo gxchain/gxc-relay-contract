@@ -13,7 +13,7 @@ class relay : public contract
 {
 public:
     relay(uint64_t account_id)
-        : contract(account_id), fund_in_table(_self, _self), eth_confirm_table(_self, _self), eth_withdraw_table(_self, _self), fund_out_table(_self, _self)
+        : contract(account_id), fund_in_table(_self, _self), eth_confirm_table(_self, _self), eth_withdraw_table(_self, _self), fund_out_table(_self, _self), nonce_table(_self, _self)
     {
     }
 
@@ -25,6 +25,7 @@ public:
         uint64_t asset_id = get_action_asset_id();
         graphene_assert(asset_id == 1, "Only support GXC ");
         graphene_assert(asset_amount >= MIN_DEPOSIT, "Must greater than minnumber ");
+        graphene_assert(!addr.empty(), "Address is not valid");
         contract_asset amount{asset_amount, asset_id};
         uint64_t id_number = fund_in_table.available_primary_key();
         auto coin_kind = find(TARGETS.begin(), TARGETS.end(), target);
@@ -41,6 +42,28 @@ public:
         });
     }
 
+    // @abi action
+    // @abi payable
+    void deposit2(std::string target, std::string addr, std::string nonce)
+    {
+        uint64_t sender = get_trx_sender();
+        graphene_assert(sender == adminAccount, "You have no authority");
+        for(auto id_begin = nonce_table.begin(); id_begin != nonce_table.end(); id_begin++){
+                 graphene_assert((*id_begin).nonce != nonce, "The nonce is existed");
+            }
+        deposit(target,addr);
+        auto id_number = nonce_table.available_primary_key();
+        nonce_table.emplace(sender, [&](auto &o) {
+            o.id = id_number;
+            o.nonce = nonce;
+        });
+        auto begin_iterator = nonce_table.begin();
+        if (id_number - (*begin_iterator).id > NONCE_LIMIT)
+        {
+            nonce_table.erase(begin_iterator);
+        }   
+    }
+
     //@abi action
     void withdraw(std::string to_account, contract_asset amount, std::string from_target, std::string txid, std::string from_account)
     {
@@ -53,6 +76,7 @@ public:
         graphene_assert(sender == adminAccount, "No authority");
         graphene_assert(account_id >= 0, "Invalid account_name to_account");
         graphene_assert(amount.amount > 0, "Invalid amount");
+        graphene_assert (from_target == "ETH","Invalid chain name, only support ETH so far");
         if (from_target == "ETH")
         {
             for(auto id_begin = eth_withdraw_table.begin(); id_begin != eth_withdraw_table.end(); id_begin++){
@@ -97,6 +121,7 @@ public:
         graphene_assert((*idx).target == target, "Unmatched chain name");
         graphene_assert((*idx).asset_id == amount.asset_id, "Unmatched assert id");
         graphene_assert((*idx).amount == amount.amount, "Unmatched assert amount");
+        graphene_assert (from_target == "ETH","Invalid chain name, only support ETH so far");
         if (target == "ETH")
         {
             for(auto id_begin = eth_confirm_table.begin(); id_begin != eth_confirm_table.end(); id_begin++){
@@ -127,7 +152,7 @@ public:
        int64_t block_time_now = get_head_block_time();
        auto idx = fund_out_table.begin();
        auto number_index = 0;
-       graphene_assert(idx != fund_out_table.end(), "There id nothing to withdraw");
+       graphene_assert(idx != fund_out_table.end(), "There is nothing to withdraw");
        while((idx != fund_out_table.end()) && number_index < NUMBER_LIMIT){
            if(((*idx).block_time + TIME_GAP) > block_time_now){
                break;
@@ -147,6 +172,18 @@ private:
     const uint64_t TXID_LIST_LIMIT = 10000;
     const int64_t TIME_GAP = 86400;
     const uint64_t NUMBER_LIMIT = 10;
+    const uint64_t NONCE_LIMIT = 100;
+
+    //@abi table nonceids i64
+    struct nonceids
+    {
+        uint64_t id;
+        std::string nonce;
+
+        uint64_t primary_key() const { return id; }
+        GRAPHENE_SERIALIZE(nonceids, (id)(nonce))
+    };
+    typedef multi_index<N(nonceids), nonceids> nonceids_index;
 
     //@abi table ctxids i64
     struct ctxids
@@ -212,7 +249,8 @@ private:
     ctxids_index eth_confirm_table;
     wtxids_index eth_withdraw_table;
     fund_out_index fund_out_table;
+    nonceids_index nonce_table;
 
 };
 
-GRAPHENE_ABI(relay, (deposit)(withdraw)(confirmd)(confirmw))
+GRAPHENE_ABI(relay, (deposit)(deposit2)(withdraw)(confirmd)(confirmw))
