@@ -21,7 +21,6 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 var fs = require('fs');
 require('dotenv').config();
-var mnemonic = fs.readFileSync('./.secret', 'utf-8');
 
 module.exports = {
   /**
@@ -70,12 +69,12 @@ module.exports = {
       network_id: 20,
       accounts: 5,
       defaultEtherBalance: 500,
-      blockTime: 3
+      blockTime: 3,
     },
     ropsten: {
       provider: () =>
         new HDWalletProvider(
-          process.env.MNEMONIC || mnemonic,
+          process.env.MNEMONIC,
           `https://ropsten.infura.io/v3/3c3919ad9e0645ed929694c58b94001a`
         ),
       network_id: 3, // Ropsten's id
@@ -88,7 +87,7 @@ module.exports = {
     live: {
       provider: () =>
         new HDWalletProvider(
-          process.env.MNEMONIC || mnemonic,
+          process.env.MNEMONIC,
           `https://mainnet.infura.io/v3/939c76fc756341f389051729d8a2f13a`
         ),
       network_id: 1,
