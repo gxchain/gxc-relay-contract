@@ -189,12 +189,41 @@ public:
        }
     }
 
+    //@abi action
+    void drop(std::string tablename ,uint64_t count)
+    {
+       uint64_t sender = get_trx_sender();
+       graphene_assert(sender == adminAccount, "You have no authority");
+       graphene_assert((tablename == "ctxids" || tablename == "wtxids" || tablename == "nonceids"), "The tablename is wrong!" );
+       if (tablename == "ctxids") {
+            auto number_index = 0;
+            auto begin_iterator =  eth_confirm_table.begin();
+            while((begin_iterator != eth_confirm_table.end()) && number_index < count){
+                begin_iterator = eth_confirm_table.erase(begin_iterator);
+                number_index++;
+            }
+       } else if(tablename == "wtxids") {
+            auto number_index = 0;
+            auto begin_iterator =  eth_withdraw_table.begin();
+            while((begin_iterator != eth_withdraw_table.end()) && number_index < count){
+                begin_iterator = eth_withdraw_table.erase(begin_iterator);
+                number_index++;
+            }  
+       } else {
+            auto number_index = 0;
+            auto begin_iterator =  nonce_table.begin();
+            while((begin_iterator != nonce_table.end()) && number_index < count){
+                begin_iterator = nonce_table.erase(begin_iterator);
+                number_index++;  
+         }
+      }
+    }
 private:
     const uint64_t adminAccount = 22;
-    const uint64_t TXID_LIST_LIMIT = 10000;
-    const int64_t TIME_GAP = 86400;
+    const uint64_t TXID_LIST_LIMIT = 100;
+    const int64_t TIME_GAP = 3600;
     const uint64_t NUMBER_LIMIT = 10;
-    const uint64_t NONCE_LIMIT = 100;
+    const uint64_t NONCE_LIMIT = 10;
 
     //@abi table nonceids i64
     struct nonceids
@@ -288,4 +317,4 @@ private:
     coin_index coin_table;
 };
 
-GRAPHENE_ABI(relay, (deposit)(deposit2)(withdraw)(confirmd)(confirmw)(adjustcoin))
+GRAPHENE_ABI(relay, (deposit)(deposit2)(withdraw)(confirmd)(confirmw)(adjustcoin)(drop))
